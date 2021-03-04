@@ -1,43 +1,47 @@
 import random
-class DataGenerator:
+from scipy.misc import comb
 
-    def generate_blocks(self, block_cnt, max_block_len, min_block_len, maxv, minv):
-        #todo introduce data distribution
+
+class DataGenerator:
+    def __init__(self, block_cnt, block_len, maxv, minv):
+        self.blocks = self.generate_blocks(block_cnt, block_len, maxv, minv)
+
+    def generate_blocks(self, block_cnt, block_len, maxv, minv):
+        # todo introduce data distribution
         res = []
         for i in range(block_cnt):
-            block = []
-            length = random.randint(min_block_len, max_block_len)
-            for j in range(length):
-                block.append(random.randint(minv, maxv))
-            res.append(block)
+            # sampling without replacement
+            res.append(random.sample(range(minv, maxv), block_len))
         return res
 
-    def generate_columns(self, col_cnt, max_col_len, col_block_types, block_types, maxv = 9999, minv = 0):
+    def generate_columns(self, col_cnt, block_cnt):
         """
         :param col_cnt: number of generated columns
-        :param max_col_len: max length of each column
-        :param col_block_types: distinct building blocks for each column
-        :param block_types: number of distinct candidate building blocks
-        :param maxv: max value of column elements
-        :param minv: min value of column elements
+        :param block_cnt: number of blocks to use
         :return:
         """
         res = []
-        blocks = self.generate_blocks(block_types, max_col_len//col_block_types, 1, maxv, minv)
         for i in range(col_cnt):
-            candidate_blocks = random.sample(blocks, col_block_types)
+            candidate_blocks = random.sample(self.blocks, block_cnt)
             flat_block = []
             for block in candidate_blocks:
-                for item in block:
-                    flat_block.append(item)
-            res.append(flat_block*(max_col_len//len(flat_block)))
+                flat_block.extend(block)
+            res.append(flat_block)
         return res
 
 
 if __name__ == '__main__':
-    dgen = DataGenerator()
-    for i in dgen.generate_columns(10,100,3,5):
-        print(i)
+    block_cnt = 20
+    block_len = 30
+    dgen = DataGenerator(block_cnt, block_len, 9999, 0)
+    random.seed(1)
+    f = open('columns.txt', 'w')
+    for i in range(1, block_cnt+1):
+        block_to_use = i
+        column_cnt =  int(comb(block_cnt, block_to_use))
+        for col in dgen.generate_columns(20, block_to_use):
+            f.write(str(col) + '\n')
+
 
 
 
