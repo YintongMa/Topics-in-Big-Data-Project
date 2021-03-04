@@ -1,3 +1,4 @@
+from dataLoader import DataLoader
 from utils import DataGenerator
 
 
@@ -39,12 +40,11 @@ if __name__ == '__main__':
     # lst2 = [9, 9, 74, 21, 45, 11, 63, 28, 26]
     # print(brutal_force(0,[lst1, lst2], 0.6))
 
-    dgen = DataGenerator()
-    cols = dgen.generate_columns(10, 100, 3, 5)
+    loader = DataLoader('columns.txt')
+    cols = loader.load_data()
 
     # show cols
-    for i in cols:
-        print(i)
+    print('num of columns', len(cols))
 
     # brutal_force
     print(brutal_force(0, cols, 0.6))
