@@ -2,6 +2,7 @@ from dataLoader import DataLoader
 from utils import DataGenerator
 from bloom_filter import BloomFilter
 
+
 def intersection(lst1, lst2):
     lst3 = [value for value in lst1 if value in lst2]
     return lst3
@@ -43,6 +44,7 @@ def bloom_filter(candidate_index, cols, threshold, n, p):
         else:
             res[i] = True
     return res
+
 
 def lsh(candidate_index, cols, threshold):
     pass

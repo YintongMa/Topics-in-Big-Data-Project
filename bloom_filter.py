@@ -141,6 +141,7 @@ class BloomFilter(object):
         est_size_of_intersection = n_A_star + n_B_star - est_size_of_union
         return int(est_size_of_intersection)
 
+
 if __name__ == '__main__':
 
     n = 100  # code space
@@ -149,6 +150,7 @@ if __name__ == '__main__':
     bloom_two = BloomFilter(n, p)
 
     import random
+
     random_list = random.sample(range(1000), k=n)
 
     for num in random_list:
