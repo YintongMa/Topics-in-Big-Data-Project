@@ -70,7 +70,7 @@ if __name__ == '__main__':
     import numpy as np
 
     # brute_force
-    brute_force_result = brute_force(0, cols, 0.6)
+    brute_force_result = brute_force(166, cols, 0.6)
     print("brute_force_result:")
     print(brute_force_result)
 
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     block_len = 30
     n = block_cnt * block_len  # code space. set it to the max size of a col for now
     p = 0.01  # false positive probability
-    bloom_filter_result = bloom_filter(0, cols, threshold=0.6, n=n, p=p)
+    bloom_filter_result = bloom_filter(166, cols, threshold=0.6, n=n, p=p)
     print("bloom_filter_result:")
     print(bloom_filter_result)
 
