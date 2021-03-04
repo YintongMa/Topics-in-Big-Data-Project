@@ -1,5 +1,5 @@
 import random
-from scipy.misc import comb
+from scipy.special import comb
 
 
 class DataGenerator:
@@ -36,17 +36,8 @@ if __name__ == '__main__':
     dgen = DataGenerator(block_cnt, block_len, 9999, 0)
     random.seed(1)
     f = open('columns.txt', 'w')
-    for i in range(1, block_cnt+1):
+    for i in range(1, block_cnt + 1):
         block_to_use = i
-        column_cnt =  int(comb(block_cnt, block_to_use))
+        column_cnt = int(comb(block_cnt, block_to_use))
         for col in dgen.generate_columns(20, block_to_use):
             f.write(str(col) + '\n')
-
-
-
-
-
-
-
-
-

@@ -12,6 +12,7 @@ class DataLoader:
             columns.append([int(x.strip()) for x in column])
         return columns
 
+
 if __name__ == '__main__':
     loader = DataLoader('columns.txt')
     columns = loader.load_data()
