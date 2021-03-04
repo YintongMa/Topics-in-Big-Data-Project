@@ -1,5 +1,5 @@
 import random
-from scipy.misc import comb
+from scipy.special import comb
 
 
 class DataGenerator:
