@@ -4,6 +4,7 @@ from bloom_filter import BloomFilter
 from LSH import LSH
 import time
 
+
 def intersection(lst1, lst2):
     lst3 = [value for value in lst1 if value in lst2]
     return lst3
@@ -25,19 +26,23 @@ def brute_force(candidate_index, cols, threshold):
 
 def bloom_filter(candidate_index, cols, threshold, n, p):
     res = [False for _ in range(len(cols))]
-    candidate = cols[candidate_index]
 
-    candidate_bloom_filter = BloomFilter(n, p)
-    for num in candidate:
-        candidate_bloom_filter.add(chr(num))
-    estimated_candidate_col_size = candidate_bloom_filter.estimate_num_of_elem()
+    # build bloom filter for all cols
+    bloom_filter_list = []
+    for col in cols:
+        bloom_filter = BloomFilter(n, p)
+        for num in col:
+            bloom_filter.add(chr(num))
+        bloom_filter_list.append(bloom_filter)
 
     for i, col in enumerate(cols):
         if i != candidate_index:
-            bloom_filter = BloomFilter(n, p)
-            for num in col:
-                bloom_filter.add(chr(num))
+            candidate_bloom_filter = bloom_filter_list[candidate_index]
+            estimated_candidate_col_size = candidate_bloom_filter.estimate_num_of_elem()
+
+            bloom_filter = bloom_filter_list[i]
             estimated_col_size = bloom_filter.estimate_num_of_elem()
+
             estimated_size_of_intersection = candidate_bloom_filter.estimate_size_of_intersection(bloom_filter)
 
             if estimated_size_of_intersection / min(estimated_candidate_col_size, estimated_col_size) >= threshold:
@@ -64,6 +69,7 @@ def lsh_ensemble(candidate_index, lsh):
         res[int(key)] = True
     return res
 
+
 def get_statistics(res, ground_truth):
     TP, TN, FP, FN = 0, 0, 0, 0
     for i, x in enumerate(res):
@@ -75,9 +81,9 @@ def get_statistics(res, ground_truth):
             FP += 1
         else:
             FN += 1
-    precision = TP/(TP + FP)
-    recall = TP/(TP + FN)
-    f1 = 2*precision*recall/(precision + recall)
+    precision = TP / (TP + FP)
+    recall = TP / (TP + FN)
+    f1 = 2 * precision * recall / (precision + recall)
     return round(precision, 3), round(recall, 3), round(f1, 3)
 
 
