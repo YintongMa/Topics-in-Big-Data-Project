@@ -1,7 +1,7 @@
 from dataLoader import DataLoader
-from utils import DataGenerator
 from bloom_filter import BloomFilter
 from LSH import LSH
+import time
 
 
 def intersection(lst1, lst2):
@@ -34,6 +34,7 @@ def bloom_filter(candidate_index, cols, threshold, n, p):
             bloom_filter.add(chr(num))
         bloom_filter_list.append(bloom_filter)
 
+    start = time.time()
     for i, col in enumerate(cols):
         if i != candidate_index:
             candidate_bloom_filter = bloom_filter_list[candidate_index]
@@ -48,17 +49,33 @@ def bloom_filter(candidate_index, cols, threshold, n, p):
                 res[i] = True
         else:
             res[i] = True
-    return res
+    processing_time = time.time() - start
+    return res, processing_time
 
 
-def lsh(candidate_index, cols, threshold):
-    lsh = LSH(cols, threshold, 128)
-    index = lsh.build_index()
-    neighbors = index.query(lsh.build_mh_sig(cols[candidate_index]))
-    res = [False for _ in range(len(cols))]
+def lsh_method(candidate_index, lsh):
+    query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
+    index = lsh.build_lsh_index()
+
+    start = time.time()
+    neighbors = index.query(query_mh)
+    processing_time = time.time() - start
+
+    res = [False for _ in range(lsh.size)]
     for i in neighbors:
         res[int(i)] = True
-    return res
+    return res, processing_time
+
+def lsh_ensemble(candidate_index, lsh):
+    query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
+    res = [False for _ in range(lsh.size)]
+    index = lsh.build_lsh_ensemble_index()
+
+    start = time.time()
+    for key in index.query(query_mh, len(lsh.cols[candidate_index])):
+        res[int(key)] = True
+    processing_time = time.time() - start
+    return res, processing_time
 
 
 def get_statistics(res, ground_truth):
@@ -97,26 +114,33 @@ if __name__ == '__main__':
     candidate_index = 166
     # brute_force
     brute_force_result = brute_force(candidate_index, cols, threshold)
-    print("brute_force finished")
+    print("brute_force finished\n")
 
     # bloom filter
     block_cnt = 20
     block_len = 30
     n = block_cnt * block_len  # code space. set it to the max size of a col for now
     p = 0.01  # false positive probability
-    bloom_filter_result = bloom_filter(candidate_index, cols, threshold=threshold, n=n, p=p)
-    print("bloom_filter finished")
+    bloom_filter_result, t = bloom_filter(candidate_index, cols, threshold=threshold, n=n, p=p)
+    print("bloom_filter finished, used %s s" % str(round(t, 4)))
 
     precision, recall, f1 = get_statistics(bloom_filter_result, brute_force_result)
-    print(precision, recall, f1)
+    print(precision, recall, f1, '\n')
 
-    lsh_result = lsh(candidate_index, cols, threshold)
-    print("lsh finished")
-    precision, recall, f1 = get_statistics(lsh_result, brute_force_result)
+    loader = DataLoader('columns.txt')
+    cols = loader.load_data()
+    lsh = LSH(cols, 0.6, 128, 'mh_sig.txt')
+    lsh.load_sigs()
+    print("build lsh signature finished\n")
+
+    print("lsh")
+    res, t = lsh_method(candidate_index, lsh)
+    precision, recall, f1 = get_statistics(res, brute_force_result)
+    print("lsh finished, used %s s" % str(round(t, 4)))
+    print(precision, recall, f1, '\n')
+
+    print("lsh ensemble")
+    res, t = lsh_ensemble(candidate_index, lsh)
+    print("lsh ensemble finished, used %s s" % str(round(t, 4)))
+    precision, recall, f1 = get_statistics(res, brute_force_result)
     print(precision, recall, f1)
-    # brute_force_np = np.array(brute_force_result, dtype=bool)
-    # bloom_filter_np = np.array(bloom_filter_result, dtype=bool)
-    #
-    # correct = (brute_force_np == bloom_filter_np)
-    # accuracy = correct.sum() / correct.size
-    # print("accuracy of bloom filter = " + str(accuracy))
