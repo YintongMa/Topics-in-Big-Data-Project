@@ -35,14 +35,15 @@ def bloom_filter(candidate_index, cols, threshold, n, p):
         bloom_filter_list.append(bloom_filter)
 
     start = time.time()
-    for i, col in enumerate(cols):
+    for i in range(len(cols)):
         if i != candidate_index:
             candidate_bloom_filter = bloom_filter_list[candidate_index]
-            estimated_candidate_col_size = candidate_bloom_filter.estimate_num_of_elem()
+            # estimated_candidate_col_size = candidate_bloom_filter.estimate_num_of_elem()
+            estimated_candidate_col_size = len(cols[candidate_index])
 
             bloom_filter = bloom_filter_list[i]
-            estimated_col_size = bloom_filter.estimate_num_of_elem()
-
+            # estimated_col_size = bloom_filter.estimate_num_of_elem()
+            estimated_col_size = len(cols[i])
             estimated_size_of_intersection = candidate_bloom_filter.estimate_size_of_intersection(bloom_filter)
 
             if estimated_size_of_intersection / min(estimated_candidate_col_size, estimated_col_size) >= threshold:
@@ -53,27 +54,62 @@ def bloom_filter(candidate_index, cols, threshold, n, p):
     return res, processing_time
 
 
-def lsh_method(candidate_index, lsh):
+def lsh_method(candidate_index, lsh, threshold):
     query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
-    index = lsh.build_lsh_index()
+    index = lsh.build_lsh_index(threshold)
+    res = [False for _ in range(lsh.size)]
 
     start = time.time()
     neighbors = index.query(query_mh)
     processing_time = time.time() - start
 
-    res = [False for _ in range(lsh.size)]
     for i in neighbors:
         res[int(i)] = True
     return res, processing_time
 
-def lsh_ensemble(candidate_index, lsh):
+def lsh_ensemble(candidate_index, lsh, threshold):
     query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
     res = [False for _ in range(lsh.size)]
-    index = lsh.build_lsh_ensemble_index()
+    index = lsh.build_lsh_ensemble_index(threshold)
 
     start = time.time()
     for key in index.query(query_mh, len(lsh.cols[candidate_index])):
         res[int(key)] = True
+    processing_time = time.time() - start
+    return res, processing_time
+
+def lsh_bloom_filter(candidate_index, lsh, lsh_threshold, overlap_threshold):
+    query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
+    index = lsh.build_lsh_index(lsh_threshold)
+    res = [False for _ in range(lsh.size)]
+
+    # build bloom filter for all cols
+    bloom_filter_list = []
+    for col in cols:
+        bloom_filter = BloomFilter(n, p)
+        for num in col:
+            bloom_filter.add(chr(num))
+        bloom_filter_list.append(bloom_filter)
+
+
+    start = time.time()
+    neighbors = index.query(query_mh)
+
+    for i in neighbors:
+        i = int(i)
+        if i != candidate_index:
+            candidate_bloom_filter = bloom_filter_list[candidate_index]
+            estimated_candidate_col_size = len(lsh.cols[candidate_index])
+
+            bloom_filter = bloom_filter_list[i]
+            estimated_col_size = len(lsh.cols[i])
+
+            estimated_size_of_intersection = candidate_bloom_filter.estimate_size_of_intersection(bloom_filter)
+
+            if estimated_size_of_intersection / min(estimated_candidate_col_size, estimated_col_size) >= overlap_threshold:
+                res[i] = True
+        else:
+            res[i] = True
     processing_time = time.time() - start
     return res, processing_time
 
@@ -129,18 +165,25 @@ if __name__ == '__main__':
 
     loader = DataLoader('columns.txt')
     cols = loader.load_data()
-    lsh = LSH(cols, 0.6, 128, 'mh_sig.txt')
+    lsh = LSH(cols, 128, 'mh_sig.txt')
     lsh.load_sigs()
     print("build lsh signature finished\n")
 
     print("lsh")
-    res, t = lsh_method(candidate_index, lsh)
+    res, t = lsh_method(candidate_index, lsh, threshold)
     precision, recall, f1 = get_statistics(res, brute_force_result)
     print("lsh finished, used %s s" % str(round(t, 4)))
     print(precision, recall, f1, '\n')
 
     print("lsh ensemble")
-    res, t = lsh_ensemble(candidate_index, lsh)
+    res, t = lsh_ensemble(candidate_index, lsh, threshold)
     print("lsh ensemble finished, used %s s" % str(round(t, 4)))
     precision, recall, f1 = get_statistics(res, brute_force_result)
+    print(precision, recall, f1, '\n')
+
+    print("lsh + bloom filter")
+    res, t = lsh_bloom_filter(candidate_index, lsh, 0.1, threshold)
+    print("lsh + bloom filter finished, used %s s" % str(round(t, 4)))
+    precision, recall, f1 = get_statistics(res, brute_force_result)
     print(precision, recall, f1)
+
