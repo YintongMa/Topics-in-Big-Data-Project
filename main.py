@@ -7,6 +7,7 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 
+
 def intersection(lst1, lst2):
     lst3 = [value for value in lst1 if value in lst2]
     return lst3
@@ -191,7 +192,6 @@ if __name__ == '__main__':
     f1_array = np.empty((num_runs, len(labels)), dtype=float)
 
     for i in range(num_runs):
-
         print("-------------------------Run " + str(i) + "------------------------------")
 
         candidate_index = random.randrange(0, len(cols))
