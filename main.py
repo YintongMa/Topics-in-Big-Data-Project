@@ -3,7 +3,9 @@ from bloom_filter import BloomFilter
 from LSH import LSH
 import time
 from bitarray import bitarray
-
+import numpy as np
+import random
+import matplotlib.pyplot as plt
 
 def intersection(lst1, lst2):
     lst3 = [value for value in lst1 if value in lst2]
@@ -165,13 +167,7 @@ if __name__ == '__main__':
     # show cols
     print('num of columns', len(cols))
 
-    # import numpy as np
-
     threshold = 0.6
-    candidate_index = 166
-    # brute_force
-    brute_force_result = brute_force(candidate_index, cols, threshold)
-    print("brute_force finished\n")
 
     # bloom filter
     block_cnt = 20
@@ -183,30 +179,83 @@ if __name__ == '__main__':
     bloom_filter_list = load_bloom_filters(bloom_filter_dir_path, len(cols), n, p)
     print("load bloom filters finished\n")
 
-    bloom_filter_result, t = bloom_filter(candidate_index, cols, threshold, bloom_filter_list)
-    print("bloom_filter finished, used %s s" % str(round(t, 4)))
-
-    precision, recall, f1 = get_statistics(bloom_filter_result, brute_force_result)
-    print(precision, recall, f1, '\n')
-
     lsh = LSH(cols, 128, 'mh_sig.txt')
     lsh.load_sigs()
     print("build lsh signature finished\n")
 
-    print("lsh")
-    res, t = lsh_method(candidate_index, lsh, threshold)
-    precision, recall, f1 = get_statistics(res, brute_force_result)
-    print("lsh finished, used %s s" % str(round(t, 4)))
-    print(precision, recall, f1, '\n')
+    num_runs = 20
 
-    print("lsh ensemble")
-    res, t = lsh_ensemble(candidate_index, lsh, threshold)
-    print("lsh ensemble finished, used %s s" % str(round(t, 4)))
-    precision, recall, f1 = get_statistics(res, brute_force_result)
-    print(precision, recall, f1, '\n')
+    labels = ["bloom filter", "lsh", "lsh ensemble", "lsh + bloom filter"]
+    precision_array = np.empty((num_runs, len(labels)), dtype=float)
+    recall_array = np.empty((num_runs, len(labels)), dtype=float)
+    f1_array = np.empty((num_runs, len(labels)), dtype=float)
 
-    print("lsh + bloom filter")
-    res, t = lsh_bloom_filter(candidate_index, lsh, 0.1, threshold, bloom_filter_list)
-    print("lsh + bloom filter finished, used %s s" % str(round(t, 4)))
-    precision, recall, f1 = get_statistics(res, brute_force_result)
-    print(precision, recall, f1)
+    for i in range(num_runs):
+
+        print("-------------------------Run " + str(i) + "------------------------------")
+
+        candidate_index = random.randrange(0, len(cols))
+
+        # brute_force
+        brute_force_result = brute_force(candidate_index, cols, threshold)
+        print("brute_force finished\n")
+
+        # bloom filter
+        print("bloom filter")
+        bloom_filter_result, t = bloom_filter(candidate_index, cols, threshold, bloom_filter_list)
+        precision, recall, f1 = get_statistics(bloom_filter_result, brute_force_result)
+        print("bloom_filter finished, used %s s" % str(round(t, 4)))
+        print(precision, recall, f1, '\n')
+        precision_array[i][0] = precision
+        recall_array[i][0] = recall
+        f1_array[i][0] = f1
+
+        print("lsh")
+        res, t = lsh_method(candidate_index, lsh, threshold)
+        precision, recall, f1 = get_statistics(res, brute_force_result)
+        print("lsh finished, used %s s" % str(round(t, 4)))
+        print(precision, recall, f1, '\n')
+        precision_array[i][1] = precision
+        recall_array[i][1] = recall
+        f1_array[i][1] = f1
+
+        print("lsh ensemble")
+        res, t = lsh_ensemble(candidate_index, lsh, threshold)
+        print("lsh ensemble finished, used %s s" % str(round(t, 4)))
+        precision, recall, f1 = get_statistics(res, brute_force_result)
+        print(precision, recall, f1, '\n')
+        precision_array[i][2] = precision
+        recall_array[i][2] = recall
+        f1_array[i][2] = f1
+
+        print("lsh + bloom filter")
+        res, t = lsh_bloom_filter(candidate_index, lsh, 0.1, threshold, bloom_filter_list)
+        print("lsh + bloom filter finished, used %s s" % str(round(t, 4)))
+        precision, recall, f1 = get_statistics(res, brute_force_result)
+        print(precision, recall, f1)
+        precision_array[i][3] = precision
+        recall_array[i][3] = recall
+        f1_array[i][3] = f1
+
+    avg_precision = np.mean(precision_array, axis=0)
+    avg_recall = np.mean(recall_array, axis=0)
+    avg_f1 = np.mean(f1_array, axis=0)
+
+    x = np.arange(len(labels))  # the label locations
+    width = 0.25  # the width of the bars
+
+    fig, ax = plt.subplots()
+    precision_bar = ax.bar(x - width, avg_precision, width, label='precision')
+    recall_bar = ax.bar(x, avg_recall, width, label='recall')
+    f1_bar = ax.bar(x + width, avg_f1, width, label='f1')
+
+    # Add some text for labels, title and custom x-axis tick labels, etc.
+    ax.set_ylabel('Scores')
+    ax.set_title('Average scores over ' + str(num_runs) + ' runs')
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.legend()
+
+    fig.tight_layout()
+
+    plt.show()
