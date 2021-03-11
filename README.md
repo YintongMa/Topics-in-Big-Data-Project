@@ -25,6 +25,9 @@ Precision, Recall, F1 by comparing with the baseline.
 
 ### LSH Ensemble (SOTA)
 
+A state of art algorithm for nearest neighbor search on overlap similarity.
+http://www.vldb.org/pvldb/vol9/p1185-zhu.pdf
+
 ### Bloom Filter
 
 We build a bloom filter for each column. We then estimate each column's size, the size of union and intersection 
@@ -32,6 +35,16 @@ between the candidate column and all other columns. We use those numbers to calc
 columns with similarities below the threshold.
 
 ### LSH + Bloom Filter
+Main idea: use LSH index to narrow the search space for bloom filter comparison
+
+Pre-processing
+1. Build an LSH index configured with a low threshold (e.g. 0.1)
+2. Build bloom filter for all sets
+
+Query
+1. Query the LSH index to get neighbors on a very low threshold. (This step only wants to find sets that have intersection with the query set. That's why we need an LSH index configured with a low threshold)
+2. Perform bloom filter comparison to get overlap similarity in the result of last step.
+
 
 ## Progress Update
 1. Implemented a data generator that can generate sets of various lengths while maintain a certain degree of overlap.
@@ -43,8 +56,8 @@ columns with similarities below the threshold.
 ![simple_result.png](simple_result.png)
 
 ## Next Step
-1. Generate larger datasets, run more benchmarking and make detailed plot.
-2. Analyze the trade offs of different methods.
+1. Generate larger datasets, run more benchmarking and make detailed plots.
+2. Analyze the tradeoffs of different methods.
 
 ## Usage
 ### Generate dataset
