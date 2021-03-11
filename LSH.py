@@ -6,16 +6,15 @@ import numpy as np
 
 
 class LSH:
-    def __init__(self, cols, threshold, perm, path):
+    def __init__(self, cols, perm, path):
         self.cols = cols
         self.size = len(cols)
-        self.threshold = threshold
         self.perm = perm
         self.path = path
         self.mh_sigs = None
 
-    def build_lsh_index(self):
-        lsh = MinHashLSH(threshold=self.threshold, num_perm=self.perm)
+    def build_lsh_index(self, threshold):
+        lsh = MinHashLSH(threshold=threshold, num_perm=self.perm)
         for i, sig in enumerate(self.mh_sigs):
             key = str(i)
             mh_obj = MinHash(num_perm=self.perm)
@@ -24,8 +23,8 @@ class LSH:
             lsh.insert(key, mh_obj)
         return lsh
 
-    def build_lsh_ensemble_index(self):
-        lsh_ensemble = MinHashLSHEnsemble(threshold=self.threshold, num_perm=self.perm, num_part=32)
+    def build_lsh_ensemble_index(self, threshold):
+        lsh_ensemble = MinHashLSHEnsemble(threshold=threshold, num_perm=self.perm, num_part=32)
         objects = []
         for i, sig in enumerate(self.mh_sigs):
             key = str(i)
@@ -65,7 +64,6 @@ class LSH:
 if __name__ == '__main__':
     loader = DataLoader('columns.txt')
     cols = loader.load_data()
-    threshold = 0.6
     perm = 128
-    lsh = LSH(cols, threshold, perm, 'mh_sig.txt')
+    lsh = LSH(cols, perm, 'mh_sig.txt')
     lsh.build_all_mh_sig()
