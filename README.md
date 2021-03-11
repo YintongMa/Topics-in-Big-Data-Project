@@ -12,17 +12,24 @@ However, when changing the similarity measure to overlap, things become more cha
 
 ### Bruteforce
 
-We do pairwise overlap similarity computations on the cadidate column with all other columns and find the nearest neighbors under a given similarity threshold.
+We do pairwise overlap similarity computations on the candidate column with all other columns and find the nearest neighbors 
+under a given similarity threshold.
 
 #### This is our analysis baseline.
 
 ### LSH
 
-We run LSH on all the columns under a given similarity threshold to get the "Index" (indicating nearest neighbors of the columns). Then we get the nearest neighbors of the cadidate column from the "Index". We will compute the result's Precision, Recall, F1 by comparing with the baseline.
+We run LSH on all the columns under a given similarity threshold to get the "Index" (indicating the nearest neighbors of 
+the columns). Then we get the nearest neighbors of the candidate column from the "Index". We will compute the result's 
+Precision, Recall, F1 by comparing with the baseline.
 
 ### LSH Ensemble (SOTA)
 
 ### Bloom Filter
+
+We build a bloom filter for each column. We then estimate each column's size, the size of union and intersection 
+between the candidate column and all other columns. We use those numbers to calculate the overlap similarity and return 
+columns with similarities below the threshold.
 
 ### LSH + Bloom Filter
 
