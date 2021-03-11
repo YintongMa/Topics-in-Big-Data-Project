@@ -14,7 +14,7 @@ However, when changing the similarity measure to overlap, things become more cha
 
 ### LSH
 
-### LSH Ensemble (STOA)
+### LSH Ensemble (SOTA)
 
 ### Bloom Filter
 
