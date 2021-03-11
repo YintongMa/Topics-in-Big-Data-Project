@@ -9,6 +9,7 @@ import mmh3
 from bitarray import bitarray
 from dataLoader import DataLoader
 
+
 class BloomFilter(object):
     '''
     Class for Bloom filter, using murmur3 hash function
@@ -141,6 +142,7 @@ class BloomFilter(object):
         est_size_of_intersection = n_A_star + n_B_star - est_size_of_union
         return int(est_size_of_intersection)
 
+
 if __name__ == '__main__':
 
     # n = 100  # code space
@@ -192,6 +194,7 @@ if __name__ == '__main__':
 
     dir_path = "./bloom_filter/"
     import os
+
     os.makedirs(dir_path, exist_ok=True)
     for i in range(len(bloom_filter_list)):
         # print(bloom_filter.bit_array.length())

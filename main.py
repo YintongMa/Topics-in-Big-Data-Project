@@ -60,6 +60,7 @@ def lsh_method(candidate_index, lsh, threshold):
         res[int(i)] = True
     return res, processing_time
 
+
 def lsh_ensemble(candidate_index, lsh, threshold):
     query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
     res = [False for _ in range(lsh.size)]
@@ -70,6 +71,7 @@ def lsh_ensemble(candidate_index, lsh, threshold):
         res[int(key)] = True
     processing_time = time.time() - start
     return res, processing_time
+
 
 def lsh_bloom_filter(candidate_index, lsh, lsh_threshold, overlap_threshold, bloom_filter_list):
     query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
@@ -90,7 +92,8 @@ def lsh_bloom_filter(candidate_index, lsh, lsh_threshold, overlap_threshold, blo
 
             estimated_size_of_intersection = candidate_bloom_filter.estimate_size_of_intersection(bloom_filter)
 
-            if estimated_size_of_intersection / min(estimated_candidate_col_size, estimated_col_size) >= overlap_threshold:
+            if estimated_size_of_intersection / min(estimated_candidate_col_size,
+                                                    estimated_col_size) >= overlap_threshold:
                 res[i] = True
         else:
             res[i] = True
@@ -114,8 +117,8 @@ def get_statistics(res, ground_truth):
     f1 = 2 * precision * recall / (precision + recall)
     return round(precision, 3), round(recall, 3), round(f1, 3)
 
-def load_bloom_filters(dir_path, count, n, p):
 
+def load_bloom_filters(dir_path, count, n, p):
     bloom_filters = []
     for i in range(count):
         file_path = dir_path + "bloom_filter_" + str(i)
@@ -207,4 +210,3 @@ if __name__ == '__main__':
     print("lsh + bloom filter finished, used %s s" % str(round(t, 4)))
     precision, recall, f1 = get_statistics(res, brute_force_result)
     print(precision, recall, f1)
-
