@@ -7,6 +7,7 @@
 import math
 import mmh3
 from bitarray import bitarray
+from dataLoader import DataLoader
 
 
 class BloomFilter(object):
@@ -31,7 +32,7 @@ class BloomFilter(object):
         self.hash_count = self.get_hash_count(self.size, items_count)
 
         # Bit array of given size
-        self.bit_array = bitarray(self.size)
+        self.bit_array = bitarray(self.size, endian='little')
 
         # initialize all bits as 0
         self.bit_array.setall(0)
@@ -144,27 +145,59 @@ class BloomFilter(object):
 
 if __name__ == '__main__':
 
-    n = 100  # code space
+    # n = 100  # code space
+    # p = 0.01  # false positive probability
+    # bloom_one = BloomFilter(n, p)
+    # bloom_two = BloomFilter(n, p)
+    #
+    # import random
+    #
+    # random_list = random.sample(range(1000), k=n)
+    #
+    # for num in random_list:
+    #     bloom_one.add(chr(num))
+    # for num in random_list[:int(len(random_list) / 2)]:
+    #     bloom_two.add(chr(num))
+    #
+    # estimate_num_of_elem_A = bloom_one.estimate_num_of_elem()
+    # estimate_num_of_elem_B = bloom_two.estimate_num_of_elem()
+    # print("estimate_num_of_elem_A: " + str(estimate_num_of_elem_A))
+    # print("estimate_num_of_elem_B: " + str(estimate_num_of_elem_B))
+    #
+    # estimate_size_of_union = bloom_one.estimate_size_of_union(bloom_two)
+    # print("estimate_size_of_union: " + str(estimate_size_of_union))
+    #
+    # estimate_size_of_intersection = bloom_one.estimate_size_of_intersection(bloom_two)
+    # print("estimate_size_of_intersection: " + str(estimate_size_of_intersection))
+
+    loader = DataLoader('columns.txt')
+    cols = loader.load_data()
+
+    block_cnt = 20
+    block_len = 30
+    n = block_cnt * block_len  # code space. set it to the max size of a col for now
     p = 0.01  # false positive probability
-    bloom_one = BloomFilter(n, p)
-    bloom_two = BloomFilter(n, p)
 
-    import random
+    # build bloom filter for all cols
+    bloom_filter_list = []
+    for col in cols:
+        bloom_filter = BloomFilter(n, p)
+        for num in col:
+            bloom_filter.add(chr(num))
+        bloom_filter_list.append(bloom_filter)
 
-    random_list = random.sample(range(1000), k=n)
+    # write each bloom filter to file
+    # f = open("bloom_filter", 'wb')
+    # for bloom_filter in bloom_filter_list:
+    #     print(bloom_filter.bit_array.length())
+    #     f.write(bloom_filter.bit_array.tobytes() + b'\n\n')
 
-    for num in random_list:
-        bloom_one.add(chr(num))
-    for num in random_list[:int(len(random_list) / 2)]:
-        bloom_two.add(chr(num))
+    dir_path = "./bloom_filter/"
+    import os
 
-    estimate_num_of_elem_A = bloom_one.estimate_num_of_elem()
-    estimate_num_of_elem_B = bloom_two.estimate_num_of_elem()
-    print("estimate_num_of_elem_A: " + str(estimate_num_of_elem_A))
-    print("estimate_num_of_elem_B: " + str(estimate_num_of_elem_B))
-
-    estimate_size_of_union = bloom_one.estimate_size_of_union(bloom_two)
-    print("estimate_size_of_union: " + str(estimate_size_of_union))
-
-    estimate_size_of_intersection = bloom_one.estimate_size_of_intersection(bloom_two)
-    print("estimate_size_of_intersection: " + str(estimate_size_of_intersection))
+    os.makedirs(dir_path, exist_ok=True)
+    for i in range(len(bloom_filter_list)):
+        # print(bloom_filter.bit_array.length())
+        file_path = dir_path + "bloom_filter_" + str(i)
+        f = open(file_path, 'wb')
+        bloom_filter_list[i].bit_array.tofile(f)

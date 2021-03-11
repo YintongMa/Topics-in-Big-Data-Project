@@ -14,7 +14,7 @@ However, when changing the similarity measure to overlap, things become more cha
 
 ### LSH
 
-### LSH Ensemble (STOA)
+### LSH Ensemble (SOTA)
 
 ### Bloom Filter
 
@@ -34,6 +34,8 @@ However, when changing the similarity measure to overlap, things become more cha
 ## Usage
 ### Generate dataset
 run `dataGenerator.py`
+### Generate bloom filters
+run `bloom_filter.py`
 ### Generate minhash signature
 run `LSH.py`
 ### Benchmarking
