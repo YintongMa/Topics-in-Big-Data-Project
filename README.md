@@ -12,7 +12,13 @@ However, when changing the similarity measure to overlap, things become more cha
 
 ### Bruteforce
 
+We do pairwise overlap similarity computations on the cadidate column with all other columns and find the nearest neighbors under a given similarity threshold.
+
+#### This is our analysis baseline.
+
 ### LSH
+
+We run LSH on all the columns under a given similarity threshold to get the "Index" (indicating nearest neighbors of the columns). Then we get the nearest neighbors of the cadidate column from the "Index". We will compute the result's Precision, Recall, F1 by comparing with the baseline.
 
 ### LSH Ensemble (SOTA)
 
