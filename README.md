@@ -32,6 +32,8 @@ We run LSH on all the columns under a given similarity threshold to get the "Ind
 2. Finished implementation for all five methods
 3. Came up with evaluation metrics and plans
 4. Ran simple experiments to compare the five methods.
+5. Result running on a smaller dataset:
+![simple_result.png](simple_result.png)
 
 ## Next Step
 1. Generate larger datasets, run more benchmarking and make detailed plot.
