@@ -177,7 +177,13 @@ def multi_variants_benchmark(col_file_name, similarity_list):
     for similarity in similarity_list:
         index = candidate_generation(cols, similarity)
         baseline = brute_force(index, cols, similarity)
-        multi_variants_benchmark_bloom_filter(cols, index, similarity, baseline)
+        ## benchmark_bloom_filter
+        ## todo add config file
+        p_list = [0.01]
+        block_list = [(20,30)]
+        multi_variants_benchmark_bloom_filter(cols, index, similarity, p_list, block_list, baseline)
+        ## benchmark others
+        ## todo impl these benchmarking strategy
         multi_variants_benchmark_lsh()
         multi_variants_benchmark_lsh_ensemble()
         multi_variants_benchmark_lsh_bloom_filter()
