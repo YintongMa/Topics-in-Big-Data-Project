@@ -1,5 +1,5 @@
 from dataLoader import DataLoader
-from bloom_filter import BloomFilter
+from bloom_filter import BloomFilter, build_bloom_filter_list
 from LSH import LSH
 import time
 from bitarray import bitarray
@@ -154,6 +154,58 @@ def load_bloom_filters(dir_path, count, n, p):
     #     bloom_filters.append(bloom_filter)
     return bloom_filters
 
+def candidate_generation(cols, similarity):
+    # currently we could choose a median column from all columns order by the count of similar neighbours within a threshold
+    length = len(cols)
+    hmap = {}
+    for i in range(length):
+        for j in range(i+1,length):
+            print(i,j)
+            if len(intersection(cols[i], cols[j])) / min(len(cols[i]), len(cols[j])) >= similarity:
+                hmap[i] = hmap.get(i, 0) + 1
+                hmap[j] = hmap.get(j, 0) + 1
+    res = [(k,v) for k,v in hmap.items()]
+    res.sort(key=lambda x:x[1])
+    return res[len(res)//2][0]
+
+def benchmark(col_file_name, similarity_list):
+    loader = DataLoader(col_file_name)
+    cols = loader.load_data()
+    for similarity in similarity_list:
+        index = candidate_generation(cols, similarity)
+        baseline = brute_force(index, cols, similarity)
+        benchmark_bloom_filter(cols, index, similarity, baseline)
+        benchmark_lsh()
+        benchmark_lsh_ensemble()
+        benchmark_lsh_bloom_filter()
+
+
+def benchmark_bloom_filter(cols, candidate_index, similarity, p_list, block_list, baseline):
+    print("benchmarking bloom filter:")
+    for p in p_list:
+        for block_cnt, block_len in block_list:
+            print("p: &f, block_cnt: %d, block_len: %d",p,block_cnt,block_len)
+            n = block_cnt * block_len  # code space. set it to the max size of a col for now
+            bf_list = []
+            for col in cols:
+                bf = BloomFilter(n, p)
+                for num in col:
+                    bf.add(chr(num))
+                bf_list.append(bf)
+            # bloom filter
+            print("bloom filter")
+            bf_result, t = bloom_filter(candidate_index, cols, similarity, bf_list)
+            precision, recall, f1 = get_statistics(bloom_filter_result, baseline)
+            print("bloom_filter finished, used %s s" % str(round(t, 4)))
+            print(precision, recall, f1, '\n')
+
+def benchmark_lsh():
+    pass
+def benchmark_lsh_ensemble():
+    pass
+def benchmark_lsh_bloom_filter():
+    pass
+
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
@@ -164,7 +216,6 @@ if __name__ == '__main__':
 
     loader = DataLoader('columns.txt')
     cols = loader.load_data()
-
     # show cols
     print('num of columns', len(cols))
 
