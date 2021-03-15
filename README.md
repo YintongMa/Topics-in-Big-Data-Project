@@ -68,3 +68,5 @@ run `bloom_filter.py`
 run `LSH.py`
 ### Benchmarking
 run `main.py`
+### Run with the script
+sh ./run.sh
