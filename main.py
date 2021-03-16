@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from dataLoader import DataLoader
 from bloom_filter import BloomFilter
 from LSH import LSH
@@ -51,7 +53,7 @@ def bloom_filter(candidate_index, cols, threshold, bloom_filter_list):
 
 
 def lsh_method(candidate_index, lsh, threshold):
-    query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
+    query_mh = lsh.mh_sigs[candidate_index]
     index = lsh.build_lsh_index(threshold)
     res = [False for _ in range(lsh.size)]
 
@@ -65,7 +67,7 @@ def lsh_method(candidate_index, lsh, threshold):
 
 
 def lsh_ensemble(candidate_index, lsh, threshold):
-    query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
+    query_mh = lsh.mh_sigs[candidate_index]
     res = [False for _ in range(lsh.size)]
     index = lsh.build_lsh_ensemble_index(threshold)
 
@@ -77,7 +79,7 @@ def lsh_ensemble(candidate_index, lsh, threshold):
 
 
 def lsh_bloom_filter(candidate_index, lsh, lsh_threshold, overlap_threshold, bloom_filter_list):
-    query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
+    query_mh = lsh.mh_sigs[candidate_index]
     index = lsh.build_lsh_index(lsh_threshold)
     res = [False for _ in range(lsh.size)]
 
@@ -154,73 +156,6 @@ def load_bloom_filters(dir_path, count, n, p):
     #     bloom_filters.append(bloom_filter)
     return bloom_filters
 
-
-def candidate_generation(cols, similarity):
-    # currently we could choose a median column from all columns order by the count of similar neighbours above a
-    # similarity
-    length = len(cols)
-    hmap = {}
-    for i in range(length):
-        for j in range(i + 1, length):
-            print(i, j)
-            if len(intersection(cols[i], cols[j])) / min(len(cols[i]), len(cols[j])) >= similarity:
-                hmap[i] = hmap.get(i, 0) + 1
-                hmap[j] = hmap.get(j, 0) + 1
-    res = [(k, v) for k, v in hmap.items()]
-    res.sort(key=lambda x: x[1])
-    return res[len(res) // 2][0]
-
-
-def multi_variants_benchmark(col_file_name, similarity_list):
-    loader = DataLoader(col_file_name)
-    cols = loader.load_data()
-    for similarity in similarity_list:
-        index = candidate_generation(cols, similarity)
-        baseline = brute_force(index, cols, similarity)
-        ## benchmark_bloom_filter
-        ## todo add config file
-        p_list = [0.01]
-        block_list = [(20,30)]
-        multi_variants_benchmark_bloom_filter(cols, index, similarity, p_list, block_list, baseline)
-        ## benchmark others
-        ## todo impl these benchmarking strategy
-        multi_variants_benchmark_lsh()
-        multi_variants_benchmark_lsh_ensemble()
-        multi_variants_benchmark_lsh_bloom_filter()
-
-
-def multi_variants_benchmark_bloom_filter(cols, candidate_index, similarity, p_list, block_list, baseline):
-    print("benchmarking bloom filter:")
-    for p in p_list:
-        for block_cnt, block_len in block_list:
-            print("p: &f, block_cnt: %d, block_len: %d", p, block_cnt, block_len)
-            n = block_cnt * block_len  # code space. set it to the max size of a col for now
-            bf_list = []
-            for col in cols:
-                bf = BloomFilter(n, p)
-                for num in col:
-                    bf.add(chr(num))
-                bf_list.append(bf)
-            # bloom filter
-            print("bloom filter")
-            bf_result, t = bloom_filter(candidate_index, cols, similarity, bf_list)
-            precision, recall, f1 = get_statistics(bloom_filter_result, baseline)
-            print("bloom_filter finished, used %s s" % str(round(t, 4)))
-            print(precision, recall, f1, '\n')
-
-
-def multi_variants_benchmark_lsh():
-    pass
-
-
-def multi_variants_benchmark_lsh_ensemble():
-    pass
-
-
-def multi_variants_benchmark_lsh_bloom_filter():
-    pass
-
-
 # Press the green button in the gutter to run.sh the script.
 if __name__ == '__main__':
     # test brute_force
@@ -246,7 +181,7 @@ if __name__ == '__main__':
     print("load bloom filters finished\n")
 
     lsh = LSH(cols, 128, 'mh_sig.txt')
-    lsh.load_sigs()
+    lsh.build_all_mh_sig()
     print("build lsh signature finished\n")
 
     num_runs = 20
