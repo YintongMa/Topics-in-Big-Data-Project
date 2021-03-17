@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from dataLoader import DataLoader
 from bloom_filter import BloomFilter
 from LSH import LSH
@@ -51,7 +53,7 @@ def bloom_filter(candidate_index, cols, threshold, bloom_filter_list):
 
 
 def lsh_method(candidate_index, lsh, threshold):
-    query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
+    query_mh = lsh.mh_sigs[candidate_index]
     index = lsh.build_lsh_index(threshold)
     res = [False for _ in range(lsh.size)]
 
@@ -65,7 +67,7 @@ def lsh_method(candidate_index, lsh, threshold):
 
 
 def lsh_ensemble(candidate_index, lsh, threshold):
-    query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
+    query_mh = lsh.mh_sigs[candidate_index]
     res = [False for _ in range(lsh.size)]
     index = lsh.build_lsh_ensemble_index(threshold)
 
@@ -77,7 +79,7 @@ def lsh_ensemble(candidate_index, lsh, threshold):
 
 
 def lsh_bloom_filter(candidate_index, lsh, lsh_threshold, overlap_threshold, bloom_filter_list):
-    query_mh = lsh.build_mh_sig_from_hashvalues(lsh.mh_sigs[candidate_index])
+    query_mh = lsh.mh_sigs[candidate_index]
     index = lsh.build_lsh_index(lsh_threshold)
     res = [False for _ in range(lsh.size)]
 
@@ -154,8 +156,7 @@ def load_bloom_filters(dir_path, count, n, p):
     #     bloom_filters.append(bloom_filter)
     return bloom_filters
 
-
-# Press the green button in the gutter to run the script.
+# Press the green button in the gutter to run.sh the script.
 if __name__ == '__main__':
     # test brute_force
     # lst1 = [4, 9, 9,1, 17, 11, 26, 28, 54, 69]
@@ -164,7 +165,6 @@ if __name__ == '__main__':
 
     loader = DataLoader('columns.txt')
     cols = loader.load_data()
-
     # show cols
     print('num of columns', len(cols))
 
@@ -181,7 +181,7 @@ if __name__ == '__main__':
     print("load bloom filters finished\n")
 
     lsh = LSH(cols, 128, 'mh_sig.txt')
-    lsh.load_sigs()
+    lsh.build_all_mh_sig()
     print("build lsh signature finished\n")
 
     num_runs = 20
