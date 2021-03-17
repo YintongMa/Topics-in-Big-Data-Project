@@ -31,7 +31,7 @@ def lsh_benchmark(lsh, candidate_index, threshold, brute_force_result):
     precision, recall, f1 = get_statistics(res, brute_force_result)
     print("lsh finished, used %s s" % str(round(t, 4)))
     print(precision, recall, f1, '\n')
-    return precision, recall, f1,time.time() - start
+    return precision, recall, f1, time.time() - start
 
 
 def lsh_ensemble_benchmark(lsh, candidate_index, threshold, brute_force_result):
@@ -41,7 +41,7 @@ def lsh_ensemble_benchmark(lsh, candidate_index, threshold, brute_force_result):
     print("lsh ensemble finished, used %s s" % str(round(t, 4)))
     precision, recall, f1 = get_statistics(res, brute_force_result)
     print(precision, recall, f1, '\n')
-    return precision, recall, f1,time.time() - start
+    return precision, recall, f1, time.time() - start
 
 
 def lsh_bf_benchmark(lsh, bloom_filter_list, candidate_index, threshold, brute_force_result):
@@ -50,7 +50,7 @@ def lsh_bf_benchmark(lsh, bloom_filter_list, candidate_index, threshold, brute_f
     res, t = lsh_bloom_filter(candidate_index, lsh, 0.1, threshold, bloom_filter_list)
     print("lsh + bloom filter finished, used %s s" % str(round(t, 4)))
     precision, recall, f1 = get_statistics(res, brute_force_result)
-    return precision, recall, f1,time.time() - start
+    return precision, recall, f1, time.time() - start
 
 
 def generate_bf_list(cols):
@@ -95,17 +95,20 @@ def benchmark(cols, candidate_index, threshold, bf_list, lsh, brute_force_result
     f1 = [0 for _ in range(len(labels))]
     time = [0 for _ in range(len(labels))]
 
-    precision[0], recall[0], f1[0],time[0] = bf_benchmark(bf_list, cols, candidate_index, threshold, brute_force_result)
-    precision[1], recall[1], f1[1],time[1] = lsh_benchmark(lsh, candidate_index, threshold, brute_force_result)
-    precision[2], recall[2], f1[2],time[2] = lsh_ensemble_benchmark(lsh, candidate_index, threshold, brute_force_result)
-    precision[3], recall[3], f1[3],time[3] = lsh_bf_benchmark(lsh, bf_list, candidate_index, threshold, brute_force_result)
+    precision[0], recall[0], f1[0], time[0] = bf_benchmark(bf_list, cols, candidate_index, threshold,
+                                                           brute_force_result)
+    precision[1], recall[1], f1[1], time[1] = lsh_benchmark(lsh, candidate_index, threshold, brute_force_result)
+    precision[2], recall[2], f1[2], time[2] = lsh_ensemble_benchmark(lsh, candidate_index, threshold,
+                                                                     brute_force_result)
+    precision[3], recall[3], f1[3], time[3] = lsh_bf_benchmark(lsh, bf_list, candidate_index, threshold,
+                                                               brute_force_result)
 
     x = np.arange(len(labels))  # the label locations
     width = 0.25  # the width of the bars
     fig, ax = plt.subplots()
-    precision_bar = ax.bar(x - width, precision, 0.5*width, label='precision')
-    recall_bar = ax.bar(x, recall, 0.5*width, label='recall')
-    f1_bar = ax.bar(x + width, f1, 0.5*width, label='f1')
+    precision_bar = ax.bar(x - width, precision, 0.5 * width, label='precision')
+    recall_bar = ax.bar(x, recall, 0.5 * width, label='recall')
+    f1_bar = ax.bar(x + width, f1, 0.5 * width, label='f1')
     # time_bar = ax.bar(x + 2*width, time, 0.5*width, label='time_cost')
     # Add some text for labels, title and custom x-axis tick labels, etc.
     ax.set_ylabel('Scores')
@@ -166,7 +169,7 @@ Output:
         brute_force_result = brute_force(candidate_index, cols, 0.6)
         print("brute_force finished\n")
         time = benchmark(cols, candidate_index, 0.6, bf_lists[i], lsh_list[i], brute_force_result,
-                  "Benchmark-1-cols-size-" + str(len(cols)))
+                         "Benchmark-1-cols-size-" + str(len(cols)))
         time_for_each_size[i] = time
         x_axis[i] = len(cols)
 
@@ -204,8 +207,9 @@ Output
         candidate_index = len(cols) // 2  # median col
         brute_force_result = brute_force(candidate_index, cols, threshold)
         print("brute_force finished\n")
-        time = benchmark(cols, candidate_index, threshold, bf_lists[cols_index], lsh_list[cols_index], brute_force_result,
-                  "Benchmark-2-threshold-" + str(int(threshold * 100)) + "%")
+        time = benchmark(cols, candidate_index, threshold, bf_lists[cols_index], lsh_list[cols_index],
+                         brute_force_result,
+                         "Benchmark-2-threshold-" + str(int(threshold * 100)) + "%")
         time_for_each_threshold[i] = time
         x_axis[i] = threshold
 
@@ -220,26 +224,26 @@ Output
     fig.tight_layout()
     # plt.show()
     fig.savefig("./bench_results/Benchmark-2-threshold")
-#
-#     print("""
-# Benchmark 3
-# Goal: Measure the effect of query column
-# Variable:
-#     query column = small col, median col, large col
-# Fix:
-#     dataset size = median size cols
-#     threshold = 0.6
-# Output
-#     Runtime
-#     precision, recall, f1
-# """)
-#     cols_index = len(dataset) // 2
-#     cols = dataset[cols_index]
-#     label = ["small-col", "median-col", "large-col"]
-#     for i, candidate_index in enumerate([0, len(cols) // 2, len(cols) - 1]):
-#         brute_force_result = brute_force(candidate_index, cols, 0.6)
-#         benchmark(cols, candidate_index, 0.6, bf_lists[cols_index], lsh_list[cols_index], brute_force_result,
-#                   "Benchmark-3-candidate-" + label[i])
+
+    print("""
+Benchmark 3
+Goal: Measure the effect of query column
+Variable:
+    query column = small col, median col, large col
+Fix:
+    dataset size = median size cols
+    threshold = 0.6
+Output
+    Runtime
+    precision, recall, f1
+""")
+    cols_index = len(dataset) // 2
+    cols = dataset[cols_index]
+    label = ["small-col", "median-col", "large-col"]
+    for i, candidate_index in enumerate([0, len(cols) // 2, len(cols) - 1]):
+        brute_force_result = brute_force(candidate_index, cols, 0.6)
+        benchmark(cols, candidate_index, 0.6, bf_lists[cols_index], lsh_list[cols_index], brute_force_result,
+                  "Benchmark-3-candidate-" + label[i])
 
 
 if __name__ == '__main__':
