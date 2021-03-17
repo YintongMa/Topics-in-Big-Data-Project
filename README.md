@@ -70,3 +70,7 @@ run `LSH.py`
 run `main.py`
 ### Run with the script
 sh ./run.sh
+
+## Benchmark
+### Dataset
+https://drive.google.com/drive/folders/1TsA3ChiRRiBUgvGT0hqJt-E1lAsLusnh?usp=sharing
