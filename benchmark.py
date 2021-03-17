@@ -16,41 +16,37 @@ import matplotlib.pyplot as plt
 def bf_benchmark(bloom_filter_list, cols, candidate_index, threshold, brute_force_result):
     # bloom filter
     print("bloom filter")
-    start = time.time()
     bloom_filter_result, t = bloom_filter(candidate_index, cols, threshold, bloom_filter_list)
     precision, recall, f1 = get_statistics(bloom_filter_result, brute_force_result)
     print("bloom_filter finished, used %s s" % str(round(t, 4)))
     print(precision, recall, f1, '\n')
-    return precision, recall, f1, time.time() - start
+    return precision, recall, f1, t
 
 
 def lsh_benchmark(lsh, candidate_index, threshold, brute_force_result):
     print("lsh")
-    start = time.time()
     res, t = lsh_method(candidate_index, lsh, threshold)
     precision, recall, f1 = get_statistics(res, brute_force_result)
     print("lsh finished, used %s s" % str(round(t, 4)))
     print(precision, recall, f1, '\n')
-    return precision, recall, f1, time.time() - start
+    return precision, recall, f1, t
 
 
 def lsh_ensemble_benchmark(lsh, candidate_index, threshold, brute_force_result):
     print("lsh ensemble")
-    start = time.time()
     res, t = lsh_ensemble(candidate_index, lsh, threshold)
     print("lsh ensemble finished, used %s s" % str(round(t, 4)))
     precision, recall, f1 = get_statistics(res, brute_force_result)
     print(precision, recall, f1, '\n')
-    return precision, recall, f1, time.time() - start
+    return precision, recall, f1, t
 
 
 def lsh_bf_benchmark(lsh, bloom_filter_list, candidate_index, threshold, brute_force_result):
     print("lsh + bloom filter")
-    start = time.time()
     res, t = lsh_bloom_filter(candidate_index, lsh, 0.1, threshold, bloom_filter_list)
     print("lsh + bloom filter finished, used %s s" % str(round(t, 4)))
     precision, recall, f1 = get_statistics(res, brute_force_result)
-    return precision, recall, f1, time.time() - start
+    return precision, recall, f1, t
 
 
 def generate_bf_list(cols):
