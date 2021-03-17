@@ -93,7 +93,7 @@ def benchmark(cols, candidate_index, threshold, bf_list, lsh, brute_force_result
     precision = [0 for _ in range(len(labels))]
     recall = [0 for _ in range(len(labels))]
     f1 = [0 for _ in range(len(labels))]
-    time = [0 for _ in range(len(labels))]
+    time = np.empty(len(labels), dtype=float)
 
     precision[0], recall[0], f1[0], time[0] = bf_benchmark(bf_list, cols, candidate_index, threshold,
                                                            brute_force_result)
@@ -177,13 +177,13 @@ Output:
     for i in range(len(labels)):
         ax.plot(x_axis, time_for_each_size[:, i], 'o-', label=labels[i])
     ax.legend()
-    ax.set_title("Benchmark-1-time")
+    ax.set_title("Benchmark-1-cols-size")
     ax.set_xticks(x_axis)
     ax.set_xlabel("size")
     ax.set_ylabel("time(s)")
     fig.tight_layout()
     # plt.show()
-    fig.savefig("./bench_results/Benchmark-1-time")
+    fig.savefig("./bench_results/Benchmark-1-cols-size")
 
     print("""
 Benchmark 2
