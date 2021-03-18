@@ -93,7 +93,7 @@ def benchmark(cols, candidate_index, threshold, bf_list, lsh, brute_force_result
 
     precision[0], recall[0], f1[0], time[0] = bf_benchmark(bf_list, cols, candidate_index, threshold,
                                                            brute_force_result)
-    precision[1], recall[1], f1[1], time[1] = lsh_benchmark(lsh, candidate_index, threshold, brute_force_result)
+    precision[1], recall[1], f1[1], time[1] = lsh_benchmark(lsh, candidate_index, 0.1, brute_force_result)
     precision[2], recall[2], f1[2], time[2] = lsh_ensemble_benchmark(lsh, candidate_index, threshold,
                                                                      brute_force_result)
     precision[3], recall[3], f1[3], time[3] = lsh_bf_benchmark(lsh, bf_list, candidate_index, threshold,
@@ -115,6 +115,13 @@ def benchmark(cols, candidate_index, threshold, bf_list, lsh, brute_force_result
     fig.tight_layout()
     # plt.show()
     fig.savefig("./bench_results/" + title)
+
+    f = open('./bench_results/'+title+".txt", 'w')
+    f.write(",".join(labels)+"\n")
+    f.write(",".join([str(i) for i in precision])+"\n")
+    f.write(",".join([str(i) for i in recall])+"\n")
+    f.write(",".join([str(i) for i in f1])+"\n")
+    f.write(",".join([str(i) for i in time])+"\n")
 
     return time
 
@@ -243,5 +250,5 @@ Output
 
 
 if __name__ == '__main__':
-    # generate_dataset("./dataset",[400, 600, 800, 1000]) //rerun to generate a new dataset
+    generate_dataset("./dataset",[100, 1000, 10000, 100000]) ##rerun to generate a new dataset
     integrated_benchmark("./dataset")
