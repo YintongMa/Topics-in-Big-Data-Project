@@ -2,7 +2,8 @@
 In this project, we investigate the problem of nearest neighbor search using overlap similarity. 
 Nearest neighbor search over jaccard similarity can be well solved through a combination of minhash and LSH.
 However, when changing the similarity measure to overlap, things become more challenging because there is not a LSHable sketch for overlap similarity.
-
+## Report
+https://drive.google.com/drive/u/3/folders/1H11QfnZQWQEH5WOZxoCqh_MvycMcta5a
 ## Problem Definition
 `input`: a set *s*, threshold *t*
 
